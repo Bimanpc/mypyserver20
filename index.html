@@ -1,0 +1,293 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Python TCP Server</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #0b1020;
+    color: #e8edff;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    background: #151d32;
+    padding: 22px;
+    border-bottom: 1px solid #29334c;
+}
+
+header h2 {
+    margin: 0;
+    color: #64b5ff;
+}
+
+.container {
+    max-width: 1050px;
+    margin: 30px auto;
+    padding: 15px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+    gap: 18px;
+}
+
+.card {
+    background: #151d32;
+    padding: 22px;
+    border-radius: 12px;
+    border: 1px solid #29334c;
+    margin-bottom: 18px;
+}
+
+h3 {
+    color: #64b5ff;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    background: #0b1020;
+    border: 1px solid #384663;
+    color: white;
+    border-radius: 6px;
+}
+
+button {
+    padding: 12px 18px;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 5px;
+    color: white;
+    font-weight: bold;
+}
+
+.start {
+    background: #16a36a;
+}
+
+.stop {
+    background: #e34857;
+}
+
+.test {
+    background: #276be8;
+}
+
+.ai {
+    background: #874be8;
+}
+
+.status {
+    font-size: 19px;
+    font-weight: bold;
+    color: #ffca64;
+}
+
+#logs, #response {
+    background: #080d18;
+    color: #65e6a5;
+    padding: 15px;
+    min-height: 65px;
+    border-radius: 6px;
+    overflow-wrap: anywhere;
+}
+
+footer {
+    text-align: center;
+    color: #8795ae;
+    padding: 25px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h2>⚡ AI PYTHON TCP SERVER</h2>
+    <p>Socket Server Management Dashboard</p>
+</header>
+
+<div class="container">
+
+<div class="grid">
+
+<div class="card">
+    <h3>Server Configuration</h3>
+
+    <label>Server Address</label>
+    <input id="host" value="0.0.0.0">
+
+    <label>TCP Port</label>
+    <input id="port" type="number" value="22222">
+
+    <button class="start" onclick="startServer()">
+        ▶ START SERVER
+    </button>
+
+    <button class="stop" onclick="stopServer()">
+        ■ STOP SERVER
+    </button>
+</div>
+
+<div class="card">
+    <h3>Server Status</h3>
+
+    <p class="status" id="status">
+        ● Checking...
+    </p>
+
+    <p>Protocol: TCP / IPv4</p>
+    <p>Default Port: 22222</p>
+    <p>Backend: Python Socket</p>
+</div>
+
+</div>
+
+<div class="card">
+    <h3>TCP Client Tester</h3>
+
+    <input id="target" value="127.0.0.1"
+           placeholder="Server IP">
+
+    <input id="testPort" type="number"
+           value="22222" placeholder="Port">
+
+    <textarea id="message"
+              placeholder="Enter message">Hello Python Server!</textarea>
+
+    <button class="test" onclick="testServer()">
+        SEND TCP MESSAGE
+    </button>
+
+    <h3>Server Response</h3>
+    <pre id="response">Waiting...</pre>
+</div>
+
+<div class="card">
+    <h3>🤖 AI Python Assistant</h3>
+
+    <textarea id="question"
+    placeholder="Ask about your Python socket server..."></textarea>
+
+    <button class="ai" onclick="askAI()">
+        ASK AI
+    </button>
+
+    <pre id="airesponse">AI assistant ready.</pre>
+</div>
+
+<div class="card">
+    <h3>System Console</h3>
+    <pre id="logs">Dashboard initialized...</pre>
+</div>
+
+</div>
+
+<footer>
+    VPSAIDEV | AI PYTHON SERVER MANAGEMENT
+</footer>
+
+<script>
+function log(message) {
+    const logs = document.getElementById("logs");
+    logs.textContent += "\n" + new Date().toLocaleTimeString()
+        + " - " + message;
+    logs.scrollTop = logs.scrollHeight;
+}
+
+async function startServer() {
+    try {
+        const r = await fetch("/start", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                host: document.getElementById("host").value,
+                port: Number(document.getElementById("port").value)
+            })
+        });
+
+        const data = await r.json();
+        log(data.message);
+        checkStatus();
+    } catch(e) {
+        log("Error: " + e.message);
+    }
+}
+
+async function stopServer() {
+    try {
+        const r = await fetch("/stop", {method:"POST"});
+        const data = await r.json();
+        log(data.message);
+        checkStatus();
+    } catch(e) {
+        log("Error: " + e.message);
+    }
+}
+
+async function checkStatus() {
+    try {
+        const r = await fetch("/status");
+        const data = await r.json();
+
+        document.getElementById("status").textContent =
+            data.running
+            ? "● SERVER ONLINE - PORT " + data.port
+            : "● SERVER OFFLINE";
+    } catch(e) {
+        document.getElementById("status").textContent =
+            "● BACKEND UNAVAILABLE";
+    }
+}
+
+async function testServer() {
+    try {
+        const r = await fetch("/test", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                host: document.getElementById("target").value,
+                port: Number(document.getElementById("testPort").value),
+                message: document.getElementById("message").value
+            })
+        });
+
+        const data = await r.json();
+
+        document.getElementById("response").textContent =
+            data.response;
+
+        log("TCP test completed");
+    } catch(e) {
+        document.getElementById("response").textContent =
+            "Connection error: " + e.message;
+    }
+}
+
+async function askAI() {
+    const question =
+        document.getElementById("question").value;
+
+    document.getElementById("airesponse").textContent =
+        "AI API integration required. Your question: " + question;
+}
+
+checkStatus();
+setInterval(checkStatus, 3000);
+</script>
+
+</body>
+</html>
